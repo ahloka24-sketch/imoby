@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موبايلي | المتجر الاحترافي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <style>
+        :root{ --primary:#6e1414; --primary-light:#a61e1e; --accent:#d4a017; --bg-cream:#fff8f6; --white:#ffffff; --shadow:0 12px 35px rgba(110,20,20,0.12); --radius-md:18px; }
+        *{box-sizing:border-box; margin:0; padding:0; font-family:'Tajawal',sans-serif;}
+        body{ background:var(--bg-cream); padding-bottom: 100px; overflow-x: hidden;}
+
+        /* الهيدر */
+        header{ background: linear-gradient(135deg, var(--primary), var(--primary-light)); padding:25px 20px; border-radius:0 0 30px 30px; color:white; display:flex; justify-content: space-between; align-items:center; position: sticky; top: 0; z-index: 1000; }
+        
+        .header-cart-simple { position: relative; cursor: pointer; font-size: 26px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
+        .cart-badge-dot { position: absolute; top: -2px; right: -2px; background: #ff3b30; color: white; font-size: 10px; font-weight: bold; min-width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; }
+
+        /* القائمة الجانبية */
+        .sidebar { position: fixed; right: -280px; top: 0; width: 280px; height: 100%; background: var(--white); z-index: 2001; transition: 0.4s; box-shadow: var(--shadow); border-radius: 25px 0 0 25px; }
+        .sidebar.active { right: 0; }
+        .sidebar-header { background: var(--primary); padding: 30px; color: white; text-align: center; border-radius: 25px 0 0 0; }
+        .side-link { padding: 15px 25px; display: block; color: var(--primary); text-decoration: none; font-weight: bold; border-bottom: 1px solid #eee; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 2000; }
+
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* البطاقات */
+        .card-item { background:white; border-radius:var(--radius-md); padding:15px; margin: 0 20px 15px; box-shadow:var(--shadow); border-right:5px solid var(--primary-light); }
+        .card-main { display: flex; align-items: center; gap: 12px; }
+        .card-icon { width:65px; height:65px; border-radius:12px; object-fit: cover; }
+        .qty-btn{ width:28px; height:28px; border:none; border-radius:8px; background:var(--accent); color:var(--primary); font-weight:bold; cursor:pointer; }
+        
+        /* السلة العائمة */
+        .floating-cart { position: fixed; left: 15px; bottom: 85px; width: 160px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 999; padding: 15px; display: none; flex-direction: column; gap: 8px; border: 2px solid var(--accent); }
+        .close-float { position: absolute; top: -10px; left: -10px; background: #ff3b30; color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid white; }
+
+        /* بطاقة الحساب الفخمة */
+        .history-card { background: white; border-radius: 15px; padding: 15px; margin: 10px 20px; border-right: 5px solid var(--accent); box-shadow: var(--shadow); margin-bottom: 20px; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); z-index: 1000; border-radius: 20px 20px 0 0; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #888; cursor: pointer; font-weight: bold; }
+        .nav-item.active { color: var(--primary); }
+
+        .customer-form { background: white; margin: 20px; padding: 20px; border-radius: 20px; border: 2px solid var(--accent); }
+        .customer-form input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 10px; text-align: right; }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header"><h2>القائمة</h2></div>
+    <a href="#" class="side-link" onclick="showPage('shop')">🏠 الرئيسية</a>
+    <a href="#" class="side-link" onclick="showPage('offers')">🔥 العروض</a>
+    <a href="#" class="side-link" onclick="showPage('cart')">🛒 السلة</a>
+    <a href="#" class="side-link" onclick="showPage('account')">👤 حسابي</a>
+</div>
+
+<header>
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div onclick="toggleSidebar()" style="font-size:24px; cursor: pointer;">☰</div>
+        <h1 style="font-size:16px;">موبايلي ستور</h1>
+    </div>
+    <div class="header-cart-simple" onclick="showPage('cart')">
+        🛒<div class="cart-badge-dot" id="cart-badge">0</div>
+    </div>
+</header>
+
+<div id="shop-page" class="page active">
+    <h2 style="padding:15px 20px;">الأجهزة</h2>
+    <div id="product-list"></div>
+</div>
+
+<div id="offers-page" class="page">
+    <h2 style="padding:15px 20px; color:#28a745;">العروض 🔥</h2>
+    <div id="offers-list"></div>
+</div>
+
+<div id="cart-page" class="page">
+    <h2 style="padding:15px 20px;">مراجعة الطلب</h2>
+    <div id="cart-items-list"></div>
+    <div id="checkout-box" style="display: none;">
+        <div class="customer-form">
+            <input type="text" id="c-name" placeholder="الاسم الكامل">
+            <input type="tel" id="c-phone" placeholder="رقم الجوال">
+            <input type="text" id="c-addr" placeholder="العنوان بالتفصيل">
+            <p style="margin:15px 0; font-weight:900; font-size: 18px;">الإجمالي: <span id="cart-total-price">0</span> ج</p>
+            <button onclick="confirmOrder()" style="width:100%; padding:15px; background:#28a745; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">تأكيد وطلب الآن ✅</button>
+        </div>
+    </div>
+</div>
+
+<div id="account-page" class="page">
+    <h2 style="padding:15px 20px;">سجل طلباتي</h2>
+    <div id="order-history-list"></div>
+</div>
+
+<div class="floating-cart" id="floating-cart">
+    <div class="close-float" onclick="hideFloat()">✕</div>
+    <div style="text-align:center; font-size:12px; font-weight:bold;">الإجمالي: <span id="float-total">0</span> ج</div>
+    <button onclick="showPage('cart')" style="background:var(--primary); color:white; border:none; padding:8px; border-radius:10px; font-weight:bold;">إتمام ➔</button>
+</div>
+
+<div class="bottom-nav">
+    <div class="nav-item active" id="nav-shop" onclick="showPage('shop')"><span>🏠</span><span>الرئيسية</span></div>
+    <div class="nav-item" id="nav-offers" onclick="showPage('offers')"><span>🔥</span><span>العروض</span></div>
+    <div class="nav-item" id="nav-cart" onclick="showPage('cart')"><span>🛒</span><span>السلة</span></div>
+    <div class="nav-item" id="nav-acc" onclick="showPage('account')"><span>👤</span><span>حسابي</span></div>
+</div>
+
+<script>
+    // --- إعدادات Firebase ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyC9NC7ePbfrqR8cJi5GhzmulK9gZgkLbcQ",
+        authDomain: "loho-4a060.firebaseapp.com",
+        databaseURL: "https://loho-4a060-default-rtdb.firebaseio.com",
+        projectId: "loho-4a060",
+        storageBucket: "loho-4a060.firebasestorage.app",
+        messagingSenderId: "400560256475",
+        appId: "1:400560256475:web:9d3cfd2181a168e705a3fe"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let cart = {};
+    let allProducts = [];
+    let isFloatClosedManually = false;
+
+    // تحميل السجل من التخزين المحلي
+    function getHistory() {
+        return JSON.parse(localStorage.getItem('user_history') || '[]');
+    }
+
+    db.ref('products').on('value', (snap) => {
+        allProducts = [];
+        snap.forEach(c => { allProducts.push({id: c.key, ...c.val()}); });
+        renderAll();
+    });
+
+    function renderAll() {
+        const shopList = document.getElementById('product-list');
+        const offerList = document.getElementById('offers-list');
+        shopList.innerHTML = ""; offerList.innerHTML = "";
+        allProducts.forEach(p => {
+            const html = `<div class="card-item"><div class="card-main"><img src="${p.image}" class="card-icon"><div style="flex:1"><h3 style="font-size:14px;">${p.title}</h3><div style="font-weight:900; color:var(--primary-light);">${p.price} ج</div></div><div style="display:flex; align-items:center; gap:8px;"><button class="qty-btn" onclick="updateQty('${p.id}', 1, ${p.price}, '${p.title}')">+</button><b>${cart[p.id]?.qty || 0}</b><button class="qty-btn" onclick="updateQty('${p.id}', -1, ${p.price}, '${p.title}')">-</button></div></div></div>`;
+            shopList.innerHTML += html;
+            if(p.category === 'عروض') offerList.innerHTML += html;
+        });
+    }
+
+    function updateQty(id, delta, price, title) {
+        if(!cart[id]) cart[id] = {qty: 0, price: price, title: title};
+        cart[id].qty = Math.max(0, cart[id].qty + delta);
+        if(delta > 0) isFloatClosedManually = false;
+        updateUI();
+        renderAll();
+    }
+
+    function updateUI() {
+        let total = 0, count = 0;
+        Object.values(cart).forEach(i => { count += i.qty; total += (i.qty * i.price); });
+        document.getElementById('cart-badge').innerText = count;
+        const isMain = document.getElementById('shop-page').classList.contains('active');
+        document.getElementById('floating-cart').style.display = (count > 0 && isMain && !isFloatClosedManually) ? 'flex' : 'none';
+        document.getElementById('float-total').innerText = total;
+    }
+
+    function hideFloat() { isFloatClosedManually = true; updateUI(); }
+
+    function showPage(pageID) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(pageID + '-page').classList.add('active');
+        const navId = pageID === 'account' ? 'nav-acc' : 'nav-' + pageID;
+        document.getElementById(navId).classList.add('active');
+        if(pageID === 'cart') renderCartPage();
+        if(pageID === 'account') renderHistoryPage();
+        updateUI();
+        closeSidebar();
+    }
+
+    function renderCartPage() {
+        const list = document.getElementById('cart-items-list');
+        const box = document.getElementById('checkout-box');
+        const items = Object.entries(cart).filter(([id, i]) => i.qty > 0);
+        if(items.length === 0) { list.innerHTML = `<p style="text-align:center; padding:50px; color:#888;">السلة فارغة</p>`; box.style.display = 'none'; return; }
+        box.style.display = 'block';
+        let total = 0;
+        list.innerHTML = items.map(([id, i]) => {
+            total += (i.qty * i.price);
+            return `<div class="card-item" style="border-right:3px solid var(--accent)"><h4>${i.title}</h4><p>${i.qty} قطعة × ${i.price} ج</p></div>`;
+        }).join('');
+        document.getElementById('cart-total-price').innerText = total;
+    }
+
+    // --- الوظيفة الأساسية: تأكيد الطلب وحفظ البطاقة ---
+    function confirmOrder() {
+        const nameVal = document.getElementById('c-name').value;
+        const phoneVal = document.getElementById('c-phone').value;
+        const addrVal = document.getElementById('c-addr').value;
+        const totalVal = document.getElementById('cart-total-price').innerText;
+
+        if(!nameVal || !phoneVal) return alert("يرجى إدخال الاسم ورقم الجوال");
+
+        // استخراج المنتجات الحالية من السلة
+        const itemsToSave = Object.values(cart).filter(i => i.qty > 0).map(i => ({
+            title: i.title,
+            qty: i.qty,
+            price: i.price,
+            subtotal: i.qty * i.price
+        }));
+
+        const newOrder = {
+            customer: { name: nameVal, phone: phoneVal, addr: addrVal },
+            items: itemsToSave,
+            total: totalVal,
+            date: new Date().toLocaleString('ar-EG')
+        };
+
+        // الرفع لـ Firebase
+        db.ref('orders').push(newOrder).then(() => {
+            // الحفظ في LocalStorage
+            let history = getHistory();
+            history.push(newOrder);
+            localStorage.setItem('user_history', JSON.stringify(history));
+
+            // تصفير البيانات
+            cart = {};
+            document.getElementById('c-name').value = "";
+            document.getElementById('c-phone').value = "";
+            document.getElementById('c-addr').value = "";
+            
+            alert("✅ تم إرسال طلبك بنجاح وحفظه في حسابك!");
+            showPage('account'); // الانتقال التلقائي للحساب
+        });
+    }
+
+    function renderHistoryPage() {
+        const list = document.getElementById('order-history-list');
+        const history = getHistory();
+        
+        if(history.length === 0) { 
+            list.innerHTML = `<p style="text-align:center; padding:40px; color:#999;">لا توجد مشتريات سابقة</p>`; 
+            return; 
+        }
+
+        list.innerHTML = history.map(o => `
+            <div class="history-card">
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding-bottom:8px; margin-bottom:10px;">
+                    <span style="font-size:11px; color:#666;">📅 ${o.date}</span>
+                    <span style="font-weight:bold; color:var(--primary);">طلب ناجح ✅</span>
+                </div>
+                <div style="margin-bottom:12px;">
+                    <p style="font-weight:bold; color:var(--primary-light); font-size:13px;">📦 تفاصيل المنتجات:</p>
+                    ${o.items.map(item => `
+                        <div style="display:flex; justify-content:space-between; font-size:12px; background:#f9f9f9; padding:6px; margin-bottom:3px; border-radius:5px;">
+                            <span>${item.title} (x${item.qty})</span>
+                            <span>${item.subtotal} ج</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="font-size:12px; margin-bottom:12px; line-height:1.5;">
+                    <p style="font-weight:bold; color:var(--primary-light);">👤 معلومات التوصيل:</p>
+                    <div style="padding-right:8px;">
+                        <b>الاسم:</b> ${o.customer.name}<br>
+                        <b>الجوال:</b> ${o.customer.phone}<br>
+                        <b>العنوان:</b> ${o.customer.addr}
+                    </div>
+                </div>
+                <div style="text-align:left; border-top:1px solid #eee; padding-top:10px; font-weight:900; color:var(--primary); font-size:16px;">
+                    الإجمالي: ${o.total} ج
+                </div>
+            </div>
+        `).reverse().join('');
+    }
+
+    function toggleSidebar() {
+        const sb = document.getElementById('sidebar');
+        const ov = document.getElementById('overlay');
+        sb.classList.toggle('active');
+        ov.style.display = sb.classList.contains('active') ? 'block' : 'none';
+    }
+    function closeSidebar() { 
+        document.getElementById('sidebar').classList.remove('active'); 
+        document.getElementById('overlay').style.display = 'none'; 
+    }
+
+    // تهيئة الصفحة عند الفتح
+    window.onload = () => {
+        if(document.getElementById('account-page').classList.contains('active')) {
+            renderHistoryPage();
+        }
+    };
+</script>
+</body>
+</html>

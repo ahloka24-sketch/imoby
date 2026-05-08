@@ -2,30 +2,23 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم الاحترافية | iMoby & Hamsa</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <style>
         :root { --primary: #6e1414; --accent: #d4a017; --bg: #f8fafc; --white: #ffffff; --success: #2ecc71; --danger: #e74c3c; --info: #3498db; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
         body { background: var(--bg); padding-bottom: 80px; color: #333; }
         
-        /* شاشة تسجيل الدخول */
-        #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, var(--primary), #1a1a1a); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-box { background: white; padding: 30px; border-radius: 24px; width: 100%; max-width: 380px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); text-align: center; }
-        .login-box h2 { color: var(--primary); font-weight: 900; margin-bottom: 25px; }
-        
         /* إجبار الأرقام الإنجليزية في العرض */
         body, input, textarea, select, span, div { font-variant-numeric: tabular-nums; -webkit-font-feature-settings: "tnum"; font-feature-settings: "tnum"; }
 
-        header { background: linear-gradient(135deg, var(--primary), #4a0a0a); color: white; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; justify-content: space-between; align-items: center; }
-        header h3 { font-weight: 900; flex: 1; }
-        .logout-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 12px; border-radius: 8px; font-size: 11px; cursor: pointer; }
+        header { background: linear-gradient(135deg, var(--primary), #4a0a0a); color: white; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        header h3 { font-weight: 900; }
 
-        .container { padding: 15px; max-width: 800px; margin: auto; display: none; } /* مخفي حتى تسجيل الدخول */
+        .container { padding: 15px; max-width: 800px; margin: auto; }
         .section { display: none; animation: slideUp 0.4s ease; }
         .active { display: block; }
         @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -55,7 +48,7 @@
         .btn-update { background: var(--success); color: white; }
         .btn-delete { background: #fee; color: var(--danger); }
 
-        .nav-bottom { position: fixed; bottom: 0; width: 100%; background: white; display: none; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); border-radius: 20px 20px 0 0; z-index: 2000; }
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; background: white; display: flex; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); border-radius: 20px 20px 0 0; z-index: 2000; }
         .nav-item { flex: 1; text-align: center; padding: 15px; font-size: 12px; color: #aaa; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
         .nav-item.active-nav { color: var(--primary); font-weight: 900; }
 
@@ -71,28 +64,16 @@
         .sku-box { display: flex; gap: 10px; margin-bottom: 15px; }
         .sku-box input { margin-bottom: 0; flex: 2; }
         .sku-box button { flex: 1; border: 1px solid var(--accent); background: #fff; color: var(--accent); border-radius: 10px; font-weight: bold; cursor: pointer; }
+
+        /* ستايل الرابط الخارجي */
+        #external-frame { width: 100%; height: calc(100vh - 160px); border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
 
-<!-- شاشة الدخول -->
-<div id="login-screen">
-    <div class="login-box">
-        <h2>دخول المشرف 🔒</h2>
-        <input type="email" id="login-email" placeholder="البريد الإلكتروني" style="text-align: center;">
-        <input type="password" id="login-pass" placeholder="كلمة المرور" style="text-align: center;">
-        <button class="btn-save" onclick="login()">دخول الآن</button>
-        <p id="error-msg" style="color:var(--danger); font-size:12px; margin-top:10px; font-weight: bold;"></p>
-    </div>
-</div>
+<header><h3>لوحة التحكم الموحدة ⚙️</h3></header>
 
-<header>
-    <button class="logout-btn" onclick="logout()">خروج</button>
-    <h3>لوحة التحكم الموحدة ⚙️</h3>
-    <div style="width: 45px;"></div>
-</header>
-
-<div class="container" id="admin-content">
+<div class="container">
     <!-- قسم الطلبات -->
     <section id="orders" class="section active">
         <div class="filter-container">
@@ -166,12 +147,18 @@
         </div>
         <div id="products-container"></div>
     </section>
+
+    <!-- القسم الرابع: الرابط الخارجي -->
+    <section id="imx" class="section">
+        <iframe id="external-frame" src="https://ahloka24-sketch.github.io/imx/"></iframe>
+    </section>
 </div>
 
-<nav class="nav-bottom" id="bottom-nav">
+<nav class="nav-bottom">
     <div class="nav-item active-nav" onclick="tab(this, 'orders')">📥<span>الطلبات</span></div>
     <div class="nav-item" onclick="tab(this, 'add')">➕<span>إضافة</span></div>
     <div class="nav-item" onclick="tab(this, 'list')">📦<span>المنتجات</span></div>
+    <div class="nav-item" onclick="tab(this, 'imx')">🔗<span>iMx</span></div>
 </nav>
 
 <script>
@@ -182,32 +169,6 @@
     const app2 = firebase.initializeApp(config2, "app2");
     const db1 = app1.database();
     const db2 = app2.database();
-    const auth = app2.auth();
-
-    // إعداد تسجيل الدخول
-    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
-
-    function login() {
-        const email = document.getElementById('login-email').value;
-        const pass = document.getElementById('login-pass').value;
-        auth.signInWithEmailAndPassword(email, pass).catch(err => {
-            document.getElementById('error-msg').innerText = "بيانات الدخول غير صحيحة!";
-        });
-    }
-
-    function logout() { auth.signOut(); location.reload(); }
-
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('admin-content').style.display = 'block';
-            document.getElementById('bottom-nav').style.display = 'flex';
-            listenToOrders();
-            loadProducts();
-        } else {
-            document.getElementById('login-screen').style.display = 'flex';
-        }
-    });
 
     let allOrders = [];
     let allProducts = [];
@@ -244,6 +205,7 @@
         allOrders = allOrders.filter(o => o.dbKey !== dbKey);
         snapshot.forEach(child => {
             const data = child.val();
+            // محاولة استخراج التاريخ للترتيب
             let ts = 0;
             if(data.date) {
                 const p = data.date.split('/');
@@ -299,15 +261,13 @@
     }
 
     // --- المنتجات ---
-    function loadProducts() {
-        db1.ref('products').on('value', (snapshot) => {
-            allProducts = [];
-            snapshot.forEach(child => {
-                allProducts.push({...child.val(), key: child.key});
-            });
-            renderProducts();
+    db1.ref('products').on('value', (snapshot) => {
+        allProducts = [];
+        snapshot.forEach(child => {
+            allProducts.push({...child.val(), key: child.key});
         });
-    }
+        renderProducts();
+    });
 
     function sortProducts(mode, el) {
         productSortMode = mode;
@@ -318,7 +278,7 @@
 
     function filterProductsAvail(mode, el) {
         productAvailFilter = mode;
-        el.parentNode.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('#list .chip').forEach(c => c.classList.remove('active')); // Note: simplistic selector
         el.classList.add('active');
         renderProducts();
     }
@@ -406,6 +366,9 @@
 
     window.updateStatus = (dbK, id) => (dbK === 'db1' ? db1 : db2).ref('orders/'+id).update({ status: document.getElementById('status-'+id).value }).then(() => alert("تم التحديث"));
     window.deleteGlobal = (dbK, path) => confirm("حذف؟") && (dbK === 'db1' ? db1 : db2).ref(path).remove();
+
+    listenToOrders();
 </script>
 </body>
 </html>
+ض

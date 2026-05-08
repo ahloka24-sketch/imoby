@@ -2,373 +2,310 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم الاحترافية | iMoby & Hamsa</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iMoby | النسخة الاحترافية الكاملة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6e1414; --accent: #d4a017; --bg: #f8fafc; --white: #ffffff; --success: #2ecc71; --danger: #e74c3c; --info: #3498db; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
-        body { background: var(--bg); padding-bottom: 80px; color: #333; }
-        
-        /* إجبار الأرقام الإنجليزية في العرض */
-        body, input, textarea, select, span, div { font-variant-numeric: tabular-nums; -webkit-font-feature-settings: "tnum"; font-feature-settings: "tnum"; }
+        :root{ --primary:#6e1414; --primary-light:#a61e1e; --accent:#d4a017; --bg-cream:#f8f9fa; --white:#ffffff; --shadow:0 8px 25px rgba(0,0,0,0.06); --radius-md:22px; }
+        *{ box-sizing:border-box; margin:0; padding:0; font-family:'Tajawal',sans-serif; -webkit-tap-highlight-color: transparent; }
+        body{ background:var(--bg-cream); padding-bottom: 140px; overflow-x: hidden; color: #2d3436; }
 
-        header { background: linear-gradient(135deg, var(--primary), #4a0a0a); color: white; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        header h3 { font-weight: 900; }
+        /* Header & Sidebar */
+        header{ background: linear-gradient(135deg, var(--primary), var(--primary-light)); padding:20px; border-radius:0 0 30px 30px; color:white; display:flex; justify-content: space-between; align-items:center; position: sticky; top: 0; z-index: 1001; box-shadow: 0 4px 20px rgba(110, 20, 20, 0.2); }
+        .sidebar { position: fixed; right: -300px; top: 0; width: 300px; height: 100%; background: #fff; z-index: 2005; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -10px 0 30px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .sidebar.active { right: 0; }
+        .side-profile { background: linear-gradient(180deg, var(--primary), #4a0d0d); padding: 45px 20px 25px; color: white; text-align: center; border-radius: 0 0 25px 25px; }
+        .side-profile img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); margin-bottom: 12px; background: #fff; object-fit: cover; }
+        .side-menu { flex: 1; padding: 20px 10px; }
+        .side-link { display: flex; align-items: center; padding: 15px 20px; margin-bottom: 5px; border-radius: 15px; color: #444; font-weight: 700; cursor: pointer; gap: 15px; }
+        .side-footer { padding: 20px; text-align: center; border-top: 1px solid #eee; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 2000; backdrop-filter: blur(4px); }
 
-        .container { padding: 15px; max-width: 800px; margin: auto; }
-        .section { display: none; animation: slideUp 0.4s ease; }
-        .active { display: block; }
-        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        /* المدخلات في المنتصف وبخط عريض */
+        input[type="text"], input[type="tel"], input[type="number"], select {
+            text-align: center !important;
+            font-weight: 800 !important;
+            font-size: 16px !important;
+        }
 
-        .filter-container { background: white; padding: 15px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .filter-label { font-size: 13px; font-weight: 700; color: #666; }
-        
-        .filter-chips { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 5px; scrollbar-width: none; }
-        .filter-chips::-webkit-scrollbar { display: none; }
-        .chip { padding: 8px 18px; background: #f1f5f9; border-radius: 50px; font-size: 12px; font-weight: 700; color: #64748b; cursor: pointer; white-space: nowrap; transition: 0.3s; border: 1px solid transparent; }
-        .chip.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(110, 20, 20, 0.3); }
+        /* Filters */
+        .filter-container { position: sticky; top: 80px; z-index: 1000; background: var(--bg-cream); padding: 10px 0; }
+        .search-wrapper { padding: 0 15px 15px; }
+        .search-box { width: 100%; padding: 15px 22px; border-radius: 18px; border: none; outline: none; background: #fff; box-shadow: var(--shadow); }
+        .filter-scroll { display: flex; overflow-x: auto; gap: 12px; padding: 0 15px 10px; scrollbar-width: none; }
+        .f-pill { background: #fff; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 800; color: #636e72; white-space: nowrap; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1.5px solid transparent; }
+        .f-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-        .order-card { background: white; border-radius: 18px; padding: 15px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); position: relative; border-right: 6px solid #ccc; }
-        .source-tag { position: absolute; left: 15px; top: 15px; padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: bold; color: white; }
-        
-        .order-time { font-size: 11px; color: #888; margin-bottom: 8px; direction: ltr; text-align: right; }
-        .customer-info { background: #f8f9fa; padding: 10px; border-radius: 10px; margin: 10px 0; border: 1px solid #edf0f2; }
-        .customer-info div { font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-        
-        .items-list { font-weight: 700; color: #444; border-bottom: 1px dashed #ddd; padding-bottom: 8px; margin-bottom: 8px; }
-        .total-price { font-size: 18px; color: var(--primary); font-weight: 900; }
+        /* Bottom Sheet (Details) */
+        .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2100; display: none; align-items: flex-end; }
+        .bottom-sheet { background: white; width: 100%; height: 75%; border-radius: 35px 35px 0 0; padding: 25px; overflow-y: auto; position: relative; transform: translateY(100%); transition: 0.4s ease; }
+        .bottom-sheet.show { transform: translateY(0); }
+        .sheet-gallery { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+        .sheet-gallery img { width: 85px; height: 85px; border-radius: 15px; object-fit: contain; background: #f9f9f9; border: 1px solid #eee; cursor: zoom-in; }
 
-        .order-actions { display: flex; gap: 8px; margin-top: 15px; }
-        .status-select { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid #ddd; font-size: 13px; background: #fff; }
-        .btn-action { border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-update { background: var(--success); color: white; }
-        .btn-delete { background: #fee; color: var(--danger); }
+        /* Products & History */
+        .card-item { background:white; border-radius:var(--radius-md); padding:15px; margin: 0 15px 15px; box-shadow:var(--shadow); display: flex; align-items: center; gap: 15px; }
+        .product-img { width: 85px; height: 85px; border-radius: 18px; object-fit: contain; background: #fafafa; }
+        .qty-controls { display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 6px; border-radius: 15px; }
+        .qty-btn { width: 38px; height: 38px; border: none; border-radius: 10px; background: #fff; color: var(--primary); font-weight: 900; font-size: 20px; box-shadow: 0 3px 6px rgba(0,0,0,0.05); }
+        .history-card { background: #fff; border-radius: 22px; padding: 20px; margin: 15px; box-shadow: var(--shadow); border-right: 6px solid var(--primary); }
+        .order-info-box { background: #fdfdfd; padding: 12px; border-radius: 12px; margin-top: 10px; font-size: 12px; line-height: 1.6; border: 1px solid #f0f0f0; }
 
-        .nav-bottom { position: fixed; bottom: 0; width: 100%; background: white; display: flex; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); border-radius: 20px 20px 0 0; z-index: 2000; }
-        .nav-item { flex: 1; text-align: center; padding: 15px; font-size: 12px; color: #aaa; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
-        .nav-item.active-nav { color: var(--primary); font-weight: 900; }
-
-        .form-group { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #eee; border-radius: 10px; background: #fafafa; outline: none; font-weight: 600; direction: ltr; text-align: right; }
-        
-        .avail-chips-group { display: flex; gap: 10px; margin-bottom: 15px; }
-        .avail-chip-btn { flex: 1; padding: 12px; border-radius: 10px; text-align: center; font-size: 13px; font-weight: bold; cursor: pointer; border: 2px solid #eee; }
-        .avail-chip-btn.on.active { background: var(--success); color: white; border-color: var(--success); }
-        .avail-chip-btn.off.active { background: var(--danger); color: white; border-color: var(--danger); }
-
-        .btn-save { width: 100%; background: var(--primary); color: white; padding: 15px; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; }
-        .sku-box { display: flex; gap: 10px; margin-bottom: 15px; }
-        .sku-box input { margin-bottom: 0; flex: 2; }
-        .sku-box button { flex: 1; border: 1px solid var(--accent); background: #fff; color: var(--accent); border-radius: 10px; font-weight: bold; cursor: pointer; }
-
-        /* ستايل الرابط الخارجي */
-        #external-frame { width: 100%; height: calc(100vh - 160px); border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        /* UI Helpers */
+        #zoomOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 3000; display: none; align-items: center; justify-content: center; }
+        .floating-cart-bar { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--primary); height: 60px; border-radius: 50px; display: none; align-items: center; justify-content: space-between; padding: 0 25px; color: white; z-index: 999; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 15px; z-index: 1001; border-radius: 25px 25px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: #bbb; font-weight: 700; cursor: pointer; }
+        .nav-item.active { color: var(--primary); }
+        .page { display: none; }
+        .page.active { display: block; }
     </style>
 </head>
 <body>
 
-<header><h3>لوحة التحكم الموحدة ⚙️</h3></header>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+<div id="zoomOverlay" onclick="this.style.display='none'"><img id="zoomImg" style="max-width:90%; border-radius:15px;"></div>
 
-<div class="container">
-    <!-- قسم الطلبات -->
-    <section id="orders" class="section active">
-        <div class="filter-container">
-            <div class="filter-header">
-                <span class="filter-label">فرز الطلبات:</span>
-                <button onclick="toggleOrderSort()" id="order-sort-btn" style="border:none; background:none; color:var(--info); font-size:12px; font-weight:bold; cursor:pointer;">⇅ الأحدث أولاً</button>
-            </div>
-            <div class="filter-chips">
-                <div class="chip active" onclick="filterByStatus('الكل', this)">الكل</div>
-                <div class="chip" onclick="filterByStatus('تم مراجعة الطلب', this)">مراجعة</div>
-                <div class="chip" onclick="filterByStatus('تم تجهيز الطلب', this)">تجهيز</div>
-                <div class="chip" onclick="filterByStatus('تم ارسال الطلب', this)">ارسال</div>
-                <div class="chip" onclick="filterByStatus('تم توصيل الطلب', this)">توصيل</div>
-            </div>
-        </div>
-        <div id="orders-list">جاري التحميل...</div>
-    </section>
-
-    <!-- قسم الإضافة -->
-    <section id="add" class="section">
-        <div class="form-group">
-            <h4 id="form-title" style="margin-bottom:15px; text-align: center;">✨ إضافة منتج جديد</h4>
-            <input type="hidden" id="p-id">
-            
-            <div class="sku-box">
-                <input type="text" id="p-sku" placeholder="#123456" inputmode="numeric">
-                <button onclick="generateSKU()">توليد #</button>
-            </div>
-
-            <input type="text" id="p-title" placeholder="اسم المنتج" style="direction: rtl;">
-            <div style="display: flex; gap: 10px;">
-                <input type="number" id="p-price" placeholder="السعر" inputmode="decimal">
-                <input type="number" id="p-stock" placeholder="الكمية" inputmode="numeric">
-            </div>
-            <input type="text" id="p-cat" placeholder="النوع" style="direction: rtl;">
-            
-            <textarea id="p-desc" placeholder="المواصفات التفصيلية..." rows="6" style="direction: rtl;"></textarea>
-            
-            <input type="text" id="p-img" placeholder="رابط الصورة الرئيسية">
-            <input type="text" id="p-img1" placeholder="رابط صورة إضافية 1">
-            <input type="text" id="p-img2" placeholder="رابط صورة إضافية 2">
-            <input type="text" id="p-img3" placeholder="رابط صورة إضافية 3">
-            
-            <div class="filter-label" style="margin-bottom: 8px;">حالة التوفر:</div>
-            <div class="avail-chips-group">
-                <div id="chip-on" class="avail-chip-btn on active" onclick="setAvail(true)">متوفر ✅</div>
-                <div id="chip-off" class="avail-chip-btn off" onclick="setAvail(false)">نفذت ❌</div>
-            </div>
-            <input type="hidden" id="p-available" value="true">
-
-            <button class="btn-save" onclick="handleProduct()">حفظ المنتج ✅</button>
-            <button id="cancel-edit" style="display:none; width:100%; margin-top:10px; background:#f0f0f0; border:none; padding:10px; border-radius:10px;" onclick="resetForm()">إلغاء</button>
-        </div>
-    </section>
-
-    <!-- إدارة المنتجات -->
-    <section id="list" class="section">
-        <div class="filter-container">
-            <input type="text" id="p-search" class="search-bar" placeholder="بحث بالاسم أو #..." oninput="renderProducts()">
-            <div class="filter-chips">
-                <div class="chip active" onclick="sortProducts('new', this)">الأحدث</div>
-                <div class="chip" onclick="sortProducts('old', this)">الأقدم</div>
-                <div class="chip" onclick="sortProducts('high', this)">الأغلى</div>
-                <div class="chip" onclick="sortProducts('low', this)">الأرخص</div>
-            </div>
-            <div style="margin-top:10px;" class="filter-chips">
-                <div class="chip active" onclick="filterProductsAvail('all', this)">الكل</div>
-                <div class="chip" onclick="filterProductsAvail('available', this)">المتوفر</div>
-                <div class="chip" onclick="filterProductsAvail('out', this)">المنتهي</div>
-            </div>
-        </div>
-        <div id="products-container"></div>
-    </section>
-
-    <!-- القسم الرابع: الرابط الخارجي -->
-    <section id="imx" class="section">
-        <iframe id="external-frame" src="https://ahloka24-sketch.github.io/imx/"></iframe>
-    </section>
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="side-profile">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" id="side-avatar">
+        <h3 id="side-name">زائر iMoby</h3>
+        <p id="side-phone">سجل طلبك الأول</p>
+    </div>
+    <div class="side-menu">
+        <div class="side-link" onclick="showPage('shop'); toggleSidebar()">🏠 الرئيسية</div>
+        <div class="side-link" onclick="showPage('offers'); toggleSidebar()">🔥 العروض</div>
+        <div class="side-link" onclick="showPage('account'); toggleSidebar()">📦 طلباتي</div>
+        <div class="side-link" onclick="window.open('https://wa.me/XXXXXXXX')">💬 واتساب</div>
+    </div>
+    <div class="side-footer"><span style="font-size:11px; color:#bbb;">V 3.0.0 Stable</span></div>
 </div>
 
-<nav class="nav-bottom">
-    <div class="nav-item active-nav" onclick="tab(this, 'orders')">📥<span>الطلبات</span></div>
-    <div class="nav-item" onclick="tab(this, 'add')">➕<span>إضافة</span></div>
-    <div class="nav-item" onclick="tab(this, 'list')">📦<span>المنتجات</span></div>
-    <div class="nav-item" onclick="tab(this, 'imx')">🔗<span>iMx</span></div>
-</nav>
+<!-- Details Sheet -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeDetails()">
+    <div class="bottom-sheet" id="detailsSheet" onclick="event.stopPropagation()">
+        <div onclick="closeDetails()" style="position:absolute; left:20px; top:20px; font-weight:900; background:#eee; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</div>
+        <div id="detailsContent"></div>
+    </div>
+</div>
 
-<script>
-    const config1 = { apiKey: "AIzaSyC9NC7ePbfrqR8cJi5GhzmulK9gZgkLbcQ", databaseURL: "https://loho-4a060-default-rtdb.firebaseio.com" };
-    const config2 = { apiKey: "AIzaSyCr4T8GLRxtf_6LNrokjKvmBOwSkuGO5yQ", databaseURL: "https://hamsa-6009e-default-rtdb.firebaseio.com" };
+<header>
+    <div onclick="toggleSidebar()" style="font-size:26px; cursor: pointer;">☰</div>
+    <h1 style="font-weight:900;">iMoby</h1>
+    <div onclick="showPage('cart')" style="font-size:24px; position:relative;">🛒<span id="top-count" style="position:absolute; top:-5px; right:-8px; background:var(--accent); color:var(--primary); font-size:10px; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900;">0</span></div>
+</header>
 
-    const app1 = firebase.initializeApp(config1, "app1");
-    const app2 = firebase.initializeApp(config2, "app2");
-    const db1 = app1.database();
-    const db2 = app2.database();
+<div class="filter-container" id="filter-container">
+    <div class="search-wrapper"><input type="text" id="searchInput" class="search-box" placeholder="ابحث عن موبايلك..." oninput="render()"></div>
+    <div class="filter-scroll">
+        <select id="priceSort" class="f-pill" onchange="render()"><option value="none">ترتيب السعر</option><option value="low">الأقل سعرًا ↑</option><option value="high">الأعلى سعرًا ↓</option></select>
+        <select id="timeSort" class="f-pill" onchange="render()"><option value="new">الأحدث</option><option value="old">الأقدم</option></select>
+        <div class="f-pill active brand-btn" onclick="filterBrand('الكل', this)">الكل</div>
+        <div class="f-pill brand-btn" onclick="filterBrand('ايفون', this)">ايفون</div>
+        <div class="f-pill brand-btn" onclick="filterBrand('سامسونج', this)">سامسونج</div>
+    </div>
+</div>
 
-    let allOrders = [];
-    let allProducts = [];
-    let currentFilter = 'الكل';
-    let productSortMode = 'new';
-    let productAvailFilter = 'all';
-    let orderSortDesc = true;
+<div id="shop-page" class="page active"><div id="product-list"></div></div>
+<div id="offers-page" class="page"><h3 style="padding:20px;">عروض حصرية 🔥</h3><div id="offers-list"></div></div>
 
-    function tab(el, id) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
-        el.classList.add('active-nav');
-    }
+<div id="cart-page" class="page">
+    <h3 style="padding:20px;">السلة 🛍️</h3>
+    <div id="cart-items-list"></div>
+    <div id="checkout-form" style="display:none; padding:15px;">
+        <div style="background:white; padding:25px; border-radius:25px; box-shadow:var(--shadow);">
+            <input type="text" id="cust-name" style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:1px solid #eee;" placeholder="الاسم">
+            <input type="tel" id="cust-phone" style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:1px solid #eee;" placeholder="رقم الهاتف">
+            <input type="text" id="cust-address" style="width:100%; padding:15px; margin-bottom:10px; border-radius:12px; border:1px solid #eee;" placeholder="العنوان بالتفصيل">
+            <button onclick="sendOrder()" style="width:100%; padding:20px; background:var(--primary); color:white; border:none; border-radius:15px; font-weight:900;">تأكيد الشراء</button>
+        </div>
+    </div>
+</div>
 
-    function generateSKU() {
-        const sku = "#" + Math.floor(100000 + Math.random() * 900000);
-        document.getElementById('p-sku').value = sku;
-    }
+<div id="account-page" class="page"><h3 style="padding:20px;">طلباتي 👤</h3><div id="history-list"></div></div>
 
-    function setAvail(status) {
-        document.getElementById('p-available').value = status;
-        document.getElementById('chip-on').classList.toggle('active', status);
-        document.getElementById('chip-off').classList.toggle('active', !status);
-    }
+<div class="floating-cart-bar" id="floatingCart" onclick="showPage('cart')">
+    <div style="display:flex; align-items:center; gap:12px;"><span id="f-count" style="background:var(--accent); color:var(--primary); padding:3px 12px; border-radius:20px; font-weight:900;">0</span><b>منتج بالسلة</b></div>
+    <div style="font-weight:900; font-size:18px;" id="f-total">0 ج.م</div>
+</div>
 
-    // --- الطلبات ---
-    function listenToOrders() {
-        db1.ref('orders').on('value', s => processOrders(s, 'موبايلي', '#6e1414', 'db1'));
-        db2.ref('orders').on('value', s => processOrders(s, 'همسة', '#2c3e50', 'db2'));
-    }
+<div class="bottom-nav">
+    <div class="nav-item active" id="nav-shop" onclick="showPage('shop')">🏠<span>الرئيسية</span></div>
+    <div class="nav-item" id="nav-offers" onclick="showPage('offers')">🔥<span>العروض</span></div>
+    <div class="nav-item" id="nav-cart" onclick="showPage('cart')">🛒<span>السلة</span></div>
+    <div class="nav-item" id="nav-acc" onclick="showPage('account')">👤<span>طلباتي</span></div>
+</div>
 
-    function processOrders(snapshot, source, color, dbKey) {
-        allOrders = allOrders.filter(o => o.dbKey !== dbKey);
-        snapshot.forEach(child => {
-            const data = child.val();
-            // محاولة استخراج التاريخ للترتيب
-            let ts = 0;
-            if(data.date) {
-                const p = data.date.split('/');
-                ts = new Date(p[2], p[1]-1, p[0]).getTime();
-            }
-            allOrders.push({...data, key: child.key, source, color, dbKey, timestamp: ts});
-        });
-        renderAllOrders();
-    }
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, push, set, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    function toggleOrderSort() {
-        orderSortDesc = !orderSortDesc;
-        document.getElementById('order-sort-btn').innerText = orderSortDesc ? "⇅ الأحدث أولاً" : "⇅ الأقدم أولاً";
-        renderAllOrders();
-    }
+    const configL = { apiKey: "AIzaSyC9NC7ePbfrqR8cJi5GhzmulK9gZgkLbcQ", databaseURL: "https://loho-4a060-default-rtdb.firebaseio.com" };
+    const configH = { apiKey: "AIzaSyCr4T8GLRxtf_6LNrokjKvmBOwSkuGO5yQ", databaseURL: "https://hamsa-6009e-default-rtdb.firebaseio.com" };
 
-    function filterByStatus(status, el) {
-        currentFilter = status;
-        document.querySelectorAll('#orders .chip').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
-        renderAllOrders();
-    }
+    const dbL = getDatabase(initializeApp(configL, "L"));
+    const dbH = getDatabase(initializeApp(configH, "H"));
 
-    function renderAllOrders() {
-        const list = document.getElementById('orders-list');
-        let filtered = [...allOrders];
-        filtered.sort((a,b) => orderSortDesc ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
-        if (currentFilter !== "الكل") filtered = filtered.filter(o => (o.status || 'تم مراجعة الطلب') === currentFilter);
-        
-        list.innerHTML = filtered.map(o => `
-            <div class="order-card" style="border-right-color: ${o.color}">
-                <span class="source-tag" style="background:${o.color}">${o.source}</span>
-                <div class="order-time">${o.date || ''} | ${o.time || ''}</div>
-                <div class="items-list">📦 ${o.items ? o.items.map(i => `${i.title} (x${i.qty})`).join(' + ') : 'طلب مخصص'}</div>
-                <div class="customer-info">
-                    <div>👤 <b>العميل:</b> ${o.customer_name || 'N/A'}</div>
-                    <div>📞 <b>الهاتف:</b> <span style="direction:ltr">${o.customer_phone || 'N/A'}</span></div>
-                    <div>📍 <b>العنوان:</b> ${o.customer_address || 'N/A'}</div>
-                </div>
-                <div class="total-price">${o.total} <small>EGP</small></div>
-                <div class="order-actions">
-                    <select class="status-select" id="status-${o.key}">
-                        <option value="تم مراجعة الطلب" ${o.status === 'تم مراجعة الطلب' ? 'selected' : ''}>مراجعة</option>
-                        <option value="تم تجهيز الطلب" ${o.status === 'تم تجهيز الطلب' ? 'selected' : ''}>تجهيز</option>
-                        <option value="تم ارسال الطلب" ${o.status === 'تم ارسال الطلب' ? 'selected' : ''}>ارسال</option>
-                        <option value="تم توصيل الطلب" ${o.status === 'تم توصيل الطلب' ? 'selected' : ''}>توصيل</option>
-                    </select>
-                    <button class="btn-action btn-update" onclick="updateStatus('${o.dbKey}', '${o.key}')">تحديث</button>
-                    <button class="btn-action btn-delete" onclick="deleteGlobal('${o.dbKey}', 'orders/${o.key}')">حذف</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // --- المنتجات ---
-    db1.ref('products').on('value', (snapshot) => {
-        allProducts = [];
-        snapshot.forEach(child => {
-            allProducts.push({...child.val(), key: child.key});
-        });
-        renderProducts();
+    onValue(ref(dbL, 'products'), (snap) => {
+        const data = snap.val();
+        if(data) { window.allProducts = Object.keys(data).map(k => ({ id: k, ...data[k] })); window.render(); }
     });
 
-    function sortProducts(mode, el) {
-        productSortMode = mode;
-        document.querySelectorAll('#list .chip').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
-        renderProducts();
+    window.onload = () => {
+        const savedPhone = localStorage.getItem('imoby_user_phone');
+        if(savedPhone) fetchHistoryByPhone(savedPhone);
+    };
+
+    function fetchHistoryByPhone(phone) {
+        const ordersQuery = query(ref(dbH, 'orders'), orderByChild('customer_phone'), equalTo(phone));
+        onValue(ordersQuery, (snapshot) => {
+            const data = snapshot.val();
+            if(data) {
+                const orders = Object.values(data).reverse();
+                const lastOrder = orders[0];
+                document.getElementById('side-name').innerText = lastOrder.customer_name;
+                document.getElementById('side-phone').innerText = lastOrder.customer_phone;
+                document.getElementById('cust-name').value = lastOrder.customer_name;
+                document.getElementById('cust-phone').value = lastOrder.customer_phone;
+                document.getElementById('cust-address').value = lastOrder.customer_address;
+                
+                document.getElementById('history-list').innerHTML = orders.map(o => `
+                    <div class="history-card">
+                        <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #eee; padding-bottom:10px;"><b>طلب ${o.orderId}</b><span style="color:green; font-weight:800;">${o.status}</span></div>
+                        <div style="margin:10px 0; font-size:13px;">${o.items.map(i => `• ${i.title} (x${i.qty})`).join('<br>')}</div>
+                        <div class="order-info-box">👤 <b>الاسم:</b> ${o.customer_name}<br>📞 <b>الهاتف:</b> ${o.customer_phone}<br>📍 <b>العنوان:</b> ${o.customer_address}<br>📅 <b>الوقت:</b> ${o.date}</div>
+                        <div style="text-align:left; font-weight:900; font-size:18px; color:var(--primary); margin-top:10px;">الإجمالي: ${o.total}</div>
+                    </div>`).join('');
+            }
+        });
     }
 
-    function filterProductsAvail(mode, el) {
-        productAvailFilter = mode;
-        document.querySelectorAll('#list .chip').forEach(c => c.classList.remove('active')); // Note: simplistic selector
-        el.classList.add('active');
-        renderProducts();
-    }
+    window.sendOrder = function() {
+        const name = document.getElementById('cust-name').value;
+        const phone = document.getElementById('cust-phone').value;
+        const addr = document.getElementById('cust-address').value;
+        if(!name || !phone || !addr) return alert("اكمل البيانات");
 
-    function renderProducts() {
-        const container = document.getElementById('products-container');
-        const searchVal = document.getElementById('p-search').value.toLowerCase();
-        
-        let filtered = allProducts.filter(p => 
-            (p.title.toLowerCase().includes(searchVal) || (p.sku && p.sku.toLowerCase().includes(searchVal)))
-        );
-
-        if(productAvailFilter === 'available') filtered = filtered.filter(p => p.available !== false);
-        if(productAvailFilter === 'out') filtered = filtered.filter(p => p.available === false);
-
-        if(productSortMode === 'high') filtered.sort((a,b) => b.price - a.price);
-        else if(productSortMode === 'low') filtered.sort((a,b) => a.price - b.price);
-        else if(productSortMode === 'old') filtered.sort((a,b) => 1);
-        else filtered.reverse();
-
-        container.innerHTML = filtered.map(p => `
-            <div class="card" style="display:flex; gap:15px; align-items:center; background:white; padding:10px; border-radius:15px; margin-bottom:10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
-                <img src="${p.image}" style="width:60px; height:60px; border-radius:10px; object-fit:contain; background:#f9f9f9">
-                <div style="flex:1">
-                    <h5 style="font-size:14px; direction:rtl">${p.title}</h5>
-                    <div style="font-size:11px; color:var(--accent); font-weight:bold;">${p.sku || ''}</div>
-                    <b style="color:var(--primary)">${p.price} EGP</b> 
-                    <div style="font-size:10px; font-weight:bold; color:${p.available !== false ? 'var(--success)' : 'var(--danger)'}">
-                        ${p.available !== false ? '● In Stock' : '● Out of Stock'} | Qty: ${p.stock || 0}
-                    </div>
-                </div>
-                <div style="display:flex; gap:5px; flex-direction:column">
-                    <button onclick="editProduct('${p.key}',${JSON.stringify(p).replace(/"/g, '&quot;')})" style="border:none; background:none; color:var(--info); font-weight:bold; font-size:12px;">تعديل</button>
-                    <button onclick="deleteGlobal('db1', 'products/${p.key}')" style="border:none; background:none; color:var(--danger); font-weight:bold; font-size:12px;">حذف</button>
-                </div>
-            </div>`).join('');
-    }
-
-    window.handleProduct = function() {
-        const id = document.getElementById('p-id').value;
-        const data = {
-            sku: document.getElementById('p-sku').value,
-            title: document.getElementById('p-title').value,
-            price: document.getElementById('p-price').value,
-            stock: document.getElementById('p-stock').value,
-            category: document.getElementById('p-cat').value,
-            desc: document.getElementById('p-desc').value,
-            image: document.getElementById('p-img').value,
-            img1: document.getElementById('p-img1').value,
-            img2: document.getElementById('p-img2').value,
-            img3: document.getElementById('p-img3').value,
-            available: document.getElementById('p-available').value === 'true'
+        const orderData = { 
+            orderId: "#IM"+Math.floor(1000+Math.random()*9000), customer_name: name, customer_phone: phone, customer_address: addr,
+            total: document.getElementById('f-total').innerText, items: Object.values(window.cart), status: "قيد المراجعة", date: new Date().toLocaleString('ar-EG') 
         };
-        if(!data.title || !data.price) return alert("الاسم والسعر مطلوبان!");
-        const ref = db1.ref('products');
-        if(id) ref.child(id).update(data).then(() => { resetForm(); tab(document.querySelectorAll('.nav-item')[2], 'list'); });
-        else ref.push(data).then(() => { resetForm(); tab(document.querySelectorAll('.nav-item')[2], 'list'); });
+
+        set(push(ref(dbH, 'orders')), orderData).then(() => {
+            localStorage.setItem('imoby_user_phone', phone);
+            window.cart = {}; updateUI(); fetchHistoryByPhone(phone); showPage('account'); alert("تم الطلب!");
+        });
+    }
+</script>
+
+<script>
+    window.allProducts = []; window.cart = {}; window.currentBrand = 'الكل';
+
+    window.render = function() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const pSort = document.getElementById('priceSort').value;
+        const tSort = document.getElementById('timeSort').value;
+
+        let f = window.allProducts.filter(p => (window.currentBrand === 'الكل' || p.brand === window.currentBrand) && p.title.toLowerCase().includes(q));
+        if(pSort === 'low') f.sort((a,b) => a.price - b.price); else if(pSort === 'high') f.sort((a,b) => b.price - a.price);
+        if(tSort === 'new') f.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        let h = ''; f.forEach(p => {
+            const qty = window.cart[p.id]?.qty || 0;
+            const out = Number(p.stock || 0) <= 0;
+            h += `<div class="card-item">
+                <img src="${p.image}" class="product-img">
+                <div style="flex:1">
+                    <h3 style="font-size:14px; margin-bottom:5px;">${p.title}</h3>
+                    <b style="color:var(--primary);">${Number(p.price).toLocaleString()} ج</b>
+                    <span onclick='openDetails(${JSON.stringify(p)})' style="display:block; font-size:11px; color:var(--accent); margin-top:5px; cursor:pointer;">المواصفات ←</span>
+                </div>
+                <div class="card-actions">
+                    ${out ? '<small style="color:red; font-weight:800;">نفذ</small>' : `<div class="qty-controls"><button class="qty-btn" onclick="updateQty('${p.id}',1,${p.price},'${p.title}','${p.image}')">+</button><span style="font-weight:900; width:15px; text-align:center;">${qty}</span><button class="qty-btn" onclick="updateQty('${p.id}',-1,${p.price},'${p.title}','${p.image}')">-</button></div>`}
+                </div>
+            </div>`;
+        });
+        document.getElementById('product-list').innerHTML = h;
     }
 
-    window.editProduct = function(id, p) {
-        tab(document.querySelectorAll('.nav-item')[1], 'add');
-        document.getElementById('p-id').value = id;
-        document.getElementById('p-sku').value = p.sku || '';
-        document.getElementById('p-title').value = p.title;
-        document.getElementById('p-price').value = p.price;
-        document.getElementById('p-stock').value = p.stock || 0;
-        document.getElementById('p-cat').value = p.category || '';
-        document.getElementById('p-desc').value = p.desc || '';
-        document.getElementById('p-img').value = p.image || '';
-        document.getElementById('p-img1').value = p.img1 || '';
-        document.getElementById('p-img2').value = p.img2 || '';
-        document.getElementById('p-img3').value = p.img3 || '';
-        setAvail(p.available !== false);
-        document.getElementById('form-title').innerText = "✏️ تعديل المنتج";
-        document.getElementById('cancel-edit').style.display = 'block';
+    window.updateQty = (id, d, p, t, img) => {
+        if(!window.cart[id]) window.cart[id] = {id, qty:0, price:p, title:t, image:img};
+        window.cart[id].qty = Math.max(0, window.cart[id].qty + d);
+        if(window.cart[id].qty === 0) delete window.cart[id];
+        updateUI(); 
+        render(); 
+        if(document.getElementById('cart-page').classList.contains('active')) renderCart();
     }
 
-    window.resetForm = function() {
-        document.querySelectorAll('#add input, #add textarea').forEach(el => el.value = '');
-        setAvail(true);
-        document.getElementById('p-id').value = '';
-        document.getElementById('form-title').innerText = "✨ إضافة منتج جديد";
-        document.getElementById('cancel-edit').style.display = 'none';
+    function updateUI() {
+        let c=0, t=0; Object.values(window.cart).forEach(i=>{c+=i.qty; t+=(i.qty*i.price);});
+        document.getElementById('top-count').innerText = c;
+        document.getElementById('f-count').innerText = c;
+        document.getElementById('f-total').innerText = t.toLocaleString() + " ج.م";
+        const isHome = document.getElementById('shop-page').classList.contains('active');
+        document.getElementById('floatingCart').style.display = (c > 0 && isHome) ? 'flex' : 'none';
     }
 
-    window.updateStatus = (dbK, id) => (dbK === 'db1' ? db1 : db2).ref('orders/'+id).update({ status: document.getElementById('status-'+id).value }).then(() => alert("تم التحديث"));
-    window.deleteGlobal = (dbK, path) => confirm("حذف؟") && (dbK === 'db1' ? db1 : db2).ref(path).remove();
+    window.openDetails = (p) => {
+        const out = Number(p.stock || 0) <= 0;
+        let specs = Object.entries(p).filter(([k,v]) => !['id','image','title','price','stock','brand','timestamp','isOffer'].includes(k) && v)
+            .map(([k,v]) => `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f5f5f5; font-size:13px;"><span>${k}</span><b>${v}</b></div>`).join('');
+        
+        document.getElementById('detailsContent').innerHTML = `
+            <div class="sheet-gallery">
+                <img src="${p.image}" onclick="zoomImg('${p.image}')">
+                <img src="${p.image}" style="opacity:0.6" onclick="zoomImg('${p.image}')">
+                <img src="${p.image}" style="opacity:0.3" onclick="zoomImg('${p.image}')">
+            </div>
+            <div style="text-align:center;">
+                <h2 style="font-weight:900;">${p.title}</h2>
+                <div style="color:var(--primary); font-size:22px; font-weight:900; margin-top:5px;">${Number(p.price).toLocaleString()} ج.م</div>
+                ${out ? '<p style="color:red; font-weight:800; margin:10px 0;">⚠️ هذا المنتج نفذ حالياً من المخزن</p>' : '<p style="color:green; font-size:12px; margin-top:5px;">متوفر الآن في المخزن ✅</p>'}
+            </div>
+            <div style="margin-top:20px; background:#f9f9f9; padding:15px; border-radius:20px;">
+                <h4 style="margin-bottom:10px;">المواصفات التقنية:</h4>
+                ${specs || 'لا توجد مواصفات إضافية'}
+            </div>
+            ${!out ? `<button onclick="updateQty('${p.id}',1,${p.price},'${p.title}','${p.image}'); closeDetails();" style="width:100%; padding:18px; background:var(--primary); color:white; border:none; border-radius:15px; margin-top:20px; font-weight:900;">إضافة إلى السلة</button>` : ''}
+        `;
+        document.getElementById('sheetOverlay').style.display = 'flex';
+        setTimeout(() => document.getElementById('detailsSheet').classList.add('show'), 10);
+    }
 
-    listenToOrders();
+    window.zoomImg = (s) => { document.getElementById('zoomImg').src = s; document.getElementById('zoomOverlay').style.display = 'flex'; }
+    window.closeDetails = () => { document.getElementById('detailsSheet').classList.remove('show'); setTimeout(() => document.getElementById('sheetOverlay').style.display='none', 400); }
+    window.toggleSidebar = () => { const s = document.getElementById('sidebar'); const o = document.getElementById('overlay'); s.classList.toggle('active'); o.style.display = s.classList.contains('active')?'block':'none'; }
+
+    window.showPage = (id) => {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id + '-page').classList.add('active');
+        document.getElementById('nav-' + (id==='account'?'acc':id)).classList.add('active');
+        document.getElementById('filter-container').style.display = (id === 'shop') ? 'block' : 'none';
+        if(id === 'cart') renderCart();
+        window.scrollTo(0,0); updateUI();
+    }
+
+    function renderCart() {
+        const items = Object.values(window.cart);
+        document.getElementById('checkout-form').style.display = items.length ? 'block' : 'none';
+        document.getElementById('cart-items-list').innerHTML = items.map(i => `
+            <div class="card-item">
+                <img src="${i.image}" style="width:50px; border-radius:8px;">
+                <div style="flex:1">
+                    <b style="font-size:13px;">${i.title}</b><br>
+                    <small style="color:var(--primary); font-weight:700;">${(i.qty * i.price).toLocaleString()} ج</small>
+                </div>
+                <div class="qty-controls">
+                    <button class="qty-btn" onclick="updateQty('${i.id}',1,${i.price},'${i.title}','${i.image}')">+</button>
+                    <span style="font-weight:900; width:15px; text-align:center;">${i.qty}</span>
+                    <button class="qty-btn" onclick="updateQty('${i.id}',-1,${i.price},'${i.title}','${i.image}')">-</button>
+                </div>
+            </div>`).join('') || '<p style="text-align:center; padding:50px; opacity:0.5; font-weight:800;">السلة فارغة حالياً</p>';
+    }
+
+    window.filterBrand = (b, btn) => { window.currentBrand = b; document.querySelectorAll('.brand-btn').forEach(x => x.classList.remove('active')); btn.classList.add('active'); render(); }
 </script>
 </body>
 </html>
-ض
